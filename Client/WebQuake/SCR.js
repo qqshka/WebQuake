@@ -174,12 +174,34 @@ SCR.Init = function()
 	SCR.showpause = Cvar.RegisterVariable('showpause', '1');
 	SCR.centertime = Cvar.RegisterVariable('scr_centertime', '2');
 	SCR.printspeed = Cvar.RegisterVariable('scr_printspeed', '8');
+	SCR.showfps = Cvar.RegisterVariable('showfps', '0');
 	Cmd.AddCommand('screenshot', SCR.ScreenShot_f);
 	Cmd.AddCommand('sizeup', SCR.SizeUp_f);
 	Cmd.AddCommand('sizedown', SCR.SizeDown_f);
 	SCR.net = Draw.PicFromWad('net');
 	SCR.turtle = Draw.PicFromWad('turtle');
 	SCR.pause = Draw.CachePic('pause');
+};
+
+SCR.sf_count = 0;
+SCR.sf_fps = 0.0;
+SCR.sf_time = 0.0;
+SCR.DrawFPS = function()
+{
+	if (SCR.showfps.value === 0)
+		return;
+
+	SCR.sf_count++;
+
+	var time_diff = Host.realtime - SCR.sf_time;
+	if (time_diff >= 1.0)
+	{
+		SCR.sf_fps = SCR.sf_count / time_diff;
+		SCR.sf_count = 0;
+		SCR.sf_time = Host.realtime;
+	}
+
+	Draw.String(VID.width - 8 * 7, VID.height - 8 * 2, SCR.sf_fps.toFixed(1));
 };
 
 SCR.count = 0;
@@ -329,6 +351,7 @@ SCR.UpdateScreen = function()
 		SCR.DrawNet();
 		SCR.DrawTurtle();
 		SCR.DrawPause();
+		SCR.DrawFPS();
 		SCR.DrawCenterString();
 		Sbar.Draw();
 		SCR.DrawConsole();
